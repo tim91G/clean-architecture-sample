@@ -12,6 +12,9 @@ interface RemoteDataSourceMovie {
     @GET("discover/movie")
     suspend fun getMovies(@Query("include_adult") includeAdult: Boolean = true): Response<NetworkMovies>
 
+    @GET("discover/movie")
+    suspend fun getPagedMovies(@Query("page") page: Int): Response<NetworkMovies>
+
     @GET("movie/{movie_id}")
     suspend fun getMovieDetails(@Path("movie_id") movieId: Int): Response<NetworkMovieDetails>
 }

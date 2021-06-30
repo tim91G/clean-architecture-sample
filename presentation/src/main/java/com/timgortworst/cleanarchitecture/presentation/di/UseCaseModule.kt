@@ -1,7 +1,10 @@
 package com.timgortworst.cleanarchitecture.presentation.di
 
+import androidx.paging.ExperimentalPagingApi
 import com.timgortworst.cleanarchitecture.domain.usecase.moviedetail.GetMovieDetailsUseCase
 import com.timgortworst.cleanarchitecture.domain.usecase.moviedetail.GetMovieDetailsUseCaseImpl
+import com.timgortworst.cleanarchitecture.domain.usecase.moviediscover.GetMovieDiscoverUseCase
+import com.timgortworst.cleanarchitecture.domain.usecase.moviediscover.GetMovieDiscoverUseCaseImpl
 import com.timgortworst.cleanarchitecture.domain.usecase.movielist.GetMoviesUseCase
 import com.timgortworst.cleanarchitecture.domain.usecase.movielist.GetMoviesUseCaseImpl
 import dagger.Binds
@@ -25,4 +28,11 @@ abstract class UseCaseModule {
     abstract fun provideGetMovieDetailsUseCase(
         getMovieDetailsUseCaseImpl: GetMovieDetailsUseCaseImpl
     ): GetMovieDetailsUseCase
+
+    @Binds
+    @ViewModelScoped
+    @OptIn(ExperimentalPagingApi::class)
+    abstract fun provideGetMovieDiscoverUseCase(
+        getMovieDiscoverUseCaseImpl: GetMovieDiscoverUseCaseImpl
+    ): GetMovieDiscoverUseCase
 }

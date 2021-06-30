@@ -20,10 +20,7 @@ class MovieDetailViewModel @Inject constructor(
                 emit(getMovieDetailsUseCase.execute(GetMovieDetailsUseCaseImpl.Params(movieId)))
             }
         }
-
-    fun setMovieId(movieId: Int) {
-        savedStateHandle[STATE_ID_MOVIE] = movieId
-    }
+    
 
     companion object {
         private const val STATE_ID_MOVIE = "movieId"

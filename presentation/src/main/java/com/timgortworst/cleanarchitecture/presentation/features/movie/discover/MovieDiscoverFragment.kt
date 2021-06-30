@@ -7,8 +7,10 @@ import android.view.ViewGroup
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.transition.TransitionInflater
 import com.timgortworst.cleanarchitecture.domain.model.movie.Movie
@@ -20,8 +22,9 @@ import com.timgortworst.cleanarchitecture.presentation.extension.setTranslucentS
 import com.timgortworst.cleanarchitecture.presentation.extension.snackbar
 import com.timgortworst.cleanarchitecture.presentation.features.movie.discover.adapter.MovieListAdapter
 import com.timgortworst.cleanarchitecture.presentation.features.movie.discover.decoration.ItemMarginDecoration
-import com.timgortworst.cleanarchitecture.presentation.features.movie.list.decoration.MovieListSpanSizeLookup.Companion.TOTAL_COLUMNS_GRID
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MovieDiscoverFragment : Fragment() {
@@ -64,23 +67,31 @@ class MovieDiscoverFragment : Fragment() {
         requireActivity().setTranslucentStatus(false)
 
         binding.swiperefresh.setOnRefreshListener {
-            viewModel.reload()
+            movieDiscoverAdapter.refresh()
         }
     }
 
     private fun observeUI() {
-        viewModel.movies.observe(viewLifecycleOwner, {
-            binding.noResults.visibility = View.GONE
-            binding.swiperefresh.isRefreshing = false
-            when (it) {
-                is Resource.Error -> {
-                    it.errorEntity?.message?.let { msg -> view?.snackbar(msg) }
-                    binding.noResults.visibility = View.VISIBLE
-                }
-                Resource.Loading -> binding.swiperefresh.isRefreshing = true
-                is Resource.Success -> movieDiscoverAdapter.submitList(it.data)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.getDiscoverFlow().collectLatest {
+                val data = (it as? Resource.Success)?.data ?: return@collectLatest
+                movieDiscoverAdapter.submitData(data)
             }
-        })
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            movieDiscoverAdapter.loadStateFlow.collectLatest { loadStates ->
+
+                when (loadStates.refresh) {
+                    is LoadState.Loading -> binding.swiperefresh.isRefreshing = true
+                    is LoadState.NotLoading -> binding.swiperefresh.isRefreshing = false
+                    is LoadState.Error -> {
+                        view?.snackbar("Error")
+                        binding.noResults.visibility = View.VISIBLE
+                    }
+                }
+            }
+        }
     }
 
     private fun setupDiscoverList() {

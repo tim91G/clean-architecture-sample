@@ -44,5 +44,8 @@ data class DbMovie(
     val voteAverage: Double = 0.0,
 
     @ColumnInfo(name = "vote_count")
-    val voteCount: Int = 0
+    val voteCount: Int = 0,
+
+    @ColumnInfo(name = "page")
+    val page: Int = 1,
 )
